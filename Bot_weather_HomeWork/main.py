@@ -5,10 +5,19 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 import requests
-from config import TOKEN
+from config import TOKEN, API_KEY
+import random
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
+
+
+@dp.message(F.photo)
+async def react_photo(message: Message):
+    list = ['Ого, какая фотка!', 'Непонятно, что это такое', 'Не отправляй мне такое больше']
+    rand_answ = random.choice(list)
+    await message.answer(rand_answ)
+    await bot.download(message.photo[-1],destination=f'img/{message.photo[-1].file_id}.jpg')
 
 # Определяем состояние для ожидания ввода города
 class WeatherState(StatesGroup):
@@ -16,7 +25,7 @@ class WeatherState(StatesGroup):
 
 # Функция для получения погоды
 def get_weather(city):
-    api_key = "b7d03c1c5c46a905a488af89efc4343f"
+    api_key = API_KEY
     url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric&lang=ru"
     response = requests.get(url)
     if response.status_code == 200:
@@ -30,7 +39,7 @@ def get_weather(city):
 # Команда /start
 @dp.message(Command('start'))
 async def start(message: Message):
-    await message.answer("Привет! Я бот, который знает погоду в любом городе мира!. Напишите /weather или выберите в меню, чтобы узнать погоду.")
+    await message.answer(f"Привет, {message.from_user.first_name}! Я бот, который знает погоду в любом городе мира!. Напишите /weather или выберите в меню, чтобы узнать погоду.")
 
 # Команда /help
 @dp.message(Command('help'))
